@@ -45,12 +45,10 @@ chadwick_is_installed <- function() {
 
 chadwick_find_lib <- function() {
   if (!is.null(cw_path <- chadwick_path())) {
-    system2(
-      "find", 
-      paste(dirname(cw_path), '-name "libchadwick*"'), stdout = TRUE
-    ) |>
-      dirname() |>
-      unique()
+    find_command <- sprintf('find %s -name "libchadwick*"', dirname(cw_path))
+    lib_paths <- system(find_command, intern = TRUE)
+    unique_dir_paths <- unique(dirname(lib_paths))
+    return(unique_dir_paths)
   }
 }
 
@@ -91,13 +89,23 @@ chadwick_set_ld_library_path <- function() {
 #' }
 
 chadwick_ld_library_path <- function() {
-  old_ld_library_paths <- Sys.getenv("LD_LIBRARY_PATH") |>
-    stringr::str_split_1(pattern = ":")
-  if (!chadwick_find_lib() %in% old_ld_library_paths) {
+  safe_split <- function(path) {
+    if (nzchar(path)) {
+      unlist(stringr::str_split(path, pattern = ":"))
+    } else {
+      character(0)
+    }
+  }
+
+  old_ld_library_paths <- safe_split(Sys.getenv("LD_LIBRARY_PATH"))
+  lib_paths <- chadwick_find_lib()
+  
+  if (!all(lib_paths %in% old_ld_library_paths)) {
     chadwick_set_ld_library_path()
   }
-  new_ld_library_paths <- Sys.getenv("LD_LIBRARY_PATH") |>
-    stringr::str_split_1(pattern = ":")
-  chadwick_find_lib() %in% new_ld_library_paths
+
+  new_ld_library_paths <- safe_split(Sys.getenv("LD_LIBRARY_PATH"))
+  all(lib_paths %in% new_ld_library_paths)
 }
+
 
