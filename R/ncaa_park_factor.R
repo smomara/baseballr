@@ -75,8 +75,8 @@ ncaa_park_factor <- function(team_id, years, type = "conference", ...) {
   
   y = length(years)
   y_all = vector(mode = "list", length = length(years))
-  if (sum(years < 2013) > 0 || sum(years > 2024) > 0) {
-    return("Please select only years between 2013 and 2024")
+  if (sum(years < 2013) > 0 || sum(years > 2023) > 0) {
+    return("Please select only years between 2013 and 2023")
   }
   
   
